@@ -1,0 +1,106 @@
+% PING PONG ECHO FEEDBACK
+clear; clc;
+
+[x, Fs] = audioread("Jazz_Sax.wav");
+
+ms = Fs / 1000;
+
+numSamples = length(x);
+
+delayBufferLength = 30000;
+
+delayBufferLeft = zeros(delayBufferLength, 1);
+
+delayBufferRight = zeros(delayBufferLength, 1);
+
+
+delayTimeLeft = 200 * ms;
+
+delayTimeRight = 300 * ms;
+
+readPositionLeft = delayBufferLength - delayTimeLeft;
+readPositionRight = delayBufferLength - delayTimeRight;
+
+writePositionLeft = 1;
+writePositionRight = 1;
+
+
+mix = 0.5;
+
+feedback = 0.70;
+
+channels = size(x);
+
+channels = channels(2);
+
+
+
+for i = 1:numSamples
+    
+    
+    % With real time controls we will perhaps have to calculate delay time
+    % to samples here so that calculations are a lot easier
+    
+    % PSEUDOCODE
+    % Look at read position. 
+    % Write Position = readPosition + delayTimeToSamples(WritePosition)
+    
+%     writePositionLeft = delayTimeToSamples(readPositionLeft + delayTimeLeft, Fs)
+%     writePositionRight = delayTimeToSamples(readPositionRight + delayTimeRight, Fs);
+
+    
+    % Calculate the wrap around on the write Position
+    writePositionLeftMod = mod(writePositionLeft, delayBufferLength) + 1;
+    writePositionRightMod = mod(writePositionRight, delayBufferLength) + 1;
+    
+    % Get the Left and Right Samples
+    
+    inLeft = x(i, 1);
+    inRight = x(i, 2);
+    
+    % Complete the LFO Calculations
+    
+    amount = 200;
+    
+    rate = 0.5;
+    
+    lfo = (amount * sin(2 * pi * (rate / Fs) * i)) + 1; 
+    
+    % Find Fractional Indexes for the read position to sit at
+    fractionalIndexLeft = readPositionLeft + lfo - amount;
+    fractionalIndexRight = readPositionRight + lfo - amount;
+    
+    % Calculate the Left Buffer and the Right Buffer at the Read Positions
+    wetRight = interpolateCircularSamples(fractionalIndexRight, delayBufferRight);
+    wetLeft = interpolateCircularSamples(fractionalIndexLeft, delayBufferLeft);
+    
+    % Write the buffer on either side with the wet signal of it's opposite
+    delayBufferRight(writePositionRightMod) = inRight + (wetLeft * feedback);
+    delayBufferLeft(writePositionLeftMod) = inLeft + (wetRight * feedback);
+    
+    % Mix in the Right and Left Signals
+    outRight = mix * wetRight + (1 - mix) * inRight;
+    outLeft = mix * wetLeft + (1 - mix) * inLeft;
+    
+    % Increment each ReadPosition
+    readPositionLeft = mod(delayBufferLength - delayTimeLeft + writePositionLeft, delayBufferLength);
+    readPositionRight = mod(delayBufferLength - delayTimeRight + writePositionRight, delayBufferLength);
+    
+    %Increment each writePosition
+    writePositionLeft = writePositionLeft + 1;
+    writePositionRight = writePositionRight + 1;
+    
+    % Write the samples out
+    x(i, 1) = outLeft;
+    x(i, 2) = outRight;
+    
+    delayTimeLeft = delayTimeLeft + 0.5 ;
+end
+
+
+sound(x, Fs);
+
+audiowrite("test.wav", x, Fs);
+
+
+

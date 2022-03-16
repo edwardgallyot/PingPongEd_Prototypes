@@ -1,0 +1,27 @@
+function [out] = Interpolate_Circular_Samples(fractionalIndex, circularBuffer)
+%INTERPOLATE_CIRCULAR_SAMPLES Interpolates samples in a circular buffer
+%   Taking in a buffer named circularBuffer and a length N
+%   as well as a fractional index frac
+
+N = length(circularBuffer);
+
+intIndex = floor(fractionalIndex);
+frac = fractionalIndex - intIndex;
+
+index_2 = mod((intIndex + 2), N);
+index_1 = mod(intIndex + 1, N);
+index_0 = mod(intIndex, N);
+index_sub_1 = mod(intIndex - 1, N);
+
+if index_sub_1 == - 1
+    index_sub_1 = N;
+end
+
+
+a0 = circularBuffer(index_2) - circularBuffer(index_1) - ...
+    circularBuffer(index_sub1) + circularBuffer(index2)
+
+a1 = 
+
+end
+
