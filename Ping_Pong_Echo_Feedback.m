@@ -16,8 +16,8 @@ delayBufferLeft = zeros(delayBufferLength, 1);
 delayBufferRight = zeros(delayBufferLength, 1);
 
 % Set Initial Delay Times
-delayTimeLeft = 220 * ms;
-delayTimeRight = 100 * ms;
+delayTimeLeft = 10 * ms;
+delayTimeRight = 20 * ms;
 
 % Set Intial Read and Write Positions
 readPositionLeft = delayBufferLength - delayTimeLeft;
@@ -28,7 +28,7 @@ writePositionRight = 1;
 
 % Mix and Feedback are simple
 mix = 0.50;
-feedback = 0.65;
+feedback = 0.8;
 
 for i = 1:numSamples
     % Get the Left and Right Samples
@@ -38,9 +38,9 @@ for i = 1:numSamples
     
     % Complete the LFO Calculations
     
-    amount = 1000;
+    amount = 400;
     
-    rate = 10;
+    rate = 0.2;
     
     lfo = (amount * sin(2 * pi * (rate / Fs) * i)) + 1; 
     
@@ -73,8 +73,8 @@ for i = 1:numSamples
     x(i, 2) = outRight;
     
     % Testing Moving of Delay Times
-%     delayTimeLeft = delayTimeLeft + 0.1;
-%     delayTimeRight = delayTimeRight - 0.01;
+     %delayTimeLeft = delayTimeLeft + 0.1;
+     %delayTimeRight = delayTimeRight - 0.01;
     
     
 end
